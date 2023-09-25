@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="65d4ff07-d0db-4d0a-8ac7-08dccfe50e85" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/dev/wscp/Main.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/dev/wscp/option/None.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/dev/wscp/option/Option.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/dev/wscp/option/Some.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/dev/wscp/result/Err.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/dev/wscp/result/Ok.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/dev/wscp/result/Result.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/dev/wscp/result/ResultRethrowException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/dev/wscp/result/UnwrapException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test/java/dev/wscp/result/ResultTest.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Record" />
+        <option value="JUnit5 Test Class" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 8
+}]]></component>
+  <component name="ProjectId" id="2VqKejn3Dpk71AYE9FT8Z62LyJd" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrary": "JUnit5",
+    "com.intellij.testIntegration.createTest.CreateTestDialog.defaultLibrarySuperClass.JUnit5": "",
+    "settings.editor.selected.configurable": "MavenSettings"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CreateTestDialog.Recents.Supers">
+      <recent name="" />
+    </key>
+    <key name="CreateTestDialog.RecentsKey">
+      <recent name="dev.wscp.result" />
+    </key>
+  </component>
+  <component name="RunManager" selected="JUnit.ResultTest">
+    <configuration name="ResultTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="monadics" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="dev.wscp.result.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="dev.wscp.result" />
+      <option name="MAIN_CLASS_NAME" value="dev.wscp.result.ResultTest" />
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ResultTest.map" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="monadics" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="dev.wscp.result.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="dev.wscp.result" />
+      <option name="MAIN_CLASS_NAME" value="dev.wscp.result.ResultTest" />
+      <option name="METHOD_NAME" value="map" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ResultTest.okOf" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="monadics" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="dev.wscp.result.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="dev.wscp.result" />
+      <option name="MAIN_CLASS_NAME" value="dev.wscp.result.ResultTest" />
+      <option name="METHOD_NAME" value="okOf" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ResultTest.orElse" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="monadics" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="dev.wscp.result.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="dev.wscp.result" />
+      <option name="MAIN_CLASS_NAME" value="dev.wscp.result.ResultTest" />
+      <option name="METHOD_NAME" value="orElse" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ResultTest.unwrap" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="monadics" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="dev.wscp.result.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="dev.wscp.result" />
+      <option name="MAIN_CLASS_NAME" value="dev.wscp.result.ResultTest" />
+      <option name="METHOD_NAME" value="unwrap" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="lua.app" factoryName="Lua Application">
+      <option name="program" value="/usr/bin/lua" />
+      <option name="file" value="" />
+      <option name="workingDir" value="$PROJECT_DIR$/src/main/java" />
+      <option name="debuggerType" value="2" />
+      <option name="params" value="" />
+      <option name="charset" value="UTF-8" />
+      <option name="showConsole" value="true" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.ResultTest" />
+        <item itemvalue="JUnit.ResultTest.okOf" />
+        <item itemvalue="JUnit.ResultTest.orElse" />
+        <item itemvalue="JUnit.ResultTest.map" />
+        <item itemvalue="JUnit.ResultTest.unwrap" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="65d4ff07-d0db-4d0a-8ac7-08dccfe50e85" name="Changes" comment="" />
+      <created>1695558267953</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1695558267953</updated>
+    </task>
+    <servers />
+  </component>
+</project>
