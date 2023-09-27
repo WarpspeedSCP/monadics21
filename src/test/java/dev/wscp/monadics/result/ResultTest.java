@@ -1,14 +1,10 @@
-package dev.wscp.result;
+package dev.wscp.monadics.result;
 
-import dev.wscp.monadics.result.Ok;
-import dev.wscp.monadics.result.Result;
-import dev.wscp.monadics.result.UnwrapException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class ResultTest {
-
     @Test
     void unwrap() {
         Result<String, Integer> res1 = Result.okOf("e");
@@ -71,7 +67,7 @@ class ResultTest {
     @Test
     void okOf() {
         assertInstanceOf(Ok.class, Result.okOf(1));
-        assertThrows(NullPointerException.class, () -> Result.<Integer, Object>okOf(null));
+        assertThrows(IllegalArgumentException.class, () -> Result.okOf(null));
     }
 
     @Test
@@ -82,18 +78,26 @@ class ResultTest {
 
     @Test
     void errOf() {
+        assertInstanceOf(Err.class, Result.errOf(3));
+        assertThrows(IllegalArgumentException.class, () -> Result.errOf(null));
     }
 
     @Test
     void errOfNullable() {
+        assertInstanceOf(Err.class, Result.errOfNullable(1));
+        assertNull(Result.<Integer, Object>errOfNullable(null).err());
     }
 
     @Test
     void runCatching() {
+        assertEquals(new Ok<>(""), Result.runCatching(() -> ""));
+        assertEquals(ArithmeticException.class, Result.runCatching(() -> 1 / (10 - 10)).unwrapError().getClass());
     }
 
     @Test
     void unwrapOrDefault() {
+        assertEquals(10, Result.okOf(10).unwrapOrDefault(3));
+        assertEquals(3, Result.errOf(10).unwrapOrDefault(3));
     }
 
     @Test
@@ -105,30 +109,26 @@ class ResultTest {
     }
 
     @Test
-    void testMap() {
+    void unwrapErrorOrNull() {
     }
 
     @Test
-    void testMapError() {
+    void unwrapErrorOrDefault() {
     }
 
-    @Test
-    void testAndThen() {
-    }
 
     @Test
     void andThenRunCatching() {
-    }
-
-    @Test
-    void testAndThenRunCatching() {
-    }
-
-    @Test
-    void testOrElse() {
+        var res1 = Result.okOf(3).andThenRunCatching((it) -> 34);
+        assertEquals(34, res1.unwrap());
+        var res2 = res1.andThenRunCatching((it) -> it / (it - it));
+        assertInstanceOf(ArithmeticException.class, res2.unwrapError());
     }
 
     @Test
     void orElseRunCatching() {
+        var res1 = Result.okOf(3).andThenRunCatching((it) -> 34 / 0);
+        var res2 = res1.orElseRunCatching((it) -> it.getMessage().length());
+        assertEquals(9, res2.unwrap());
     }
 }
