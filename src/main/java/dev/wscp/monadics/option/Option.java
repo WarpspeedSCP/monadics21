@@ -1,7 +1,7 @@
 package dev.wscp.monadics.option;
 
 import dev.wscp.monadics.result.Result;
-import dev.wscp.monadics.result.UnwrapException;
+import dev.wscp.monadics.util.UnwrapException;
 import dev.wscp.monadics.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

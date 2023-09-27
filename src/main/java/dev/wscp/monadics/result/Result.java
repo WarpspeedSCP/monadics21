@@ -2,6 +2,9 @@ package dev.wscp.monadics.result;
 
 import dev.wscp.monadics.option.None;
 import dev.wscp.monadics.option.Option;
+import dev.wscp.monadics.util.ResultBindingException;
+import dev.wscp.monadics.util.ResultRethrowException;
+import dev.wscp.monadics.util.UnwrapException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,7 +68,9 @@ public sealed interface Result<T, E> permits Ok, Err {
             case Ok(T value) -> value;
             case Err(E err) -> {
                 if (err instanceof Throwable e) {
-                    throw new UnwrapException("Attempted to unwrap an exception.", e);
+                    var exc = new UnwrapException("Attempted to unwrap an exception.");
+                    exc.addSuppressed(e);
+                    throw exc;
                 } else {
                     throw new UnwrapException("Attempted to unwrap an error value " + err.toString());
                 }
@@ -180,7 +185,7 @@ public sealed interface Result<T, E> permits Ok, Err {
      * @return
      * @param <V>
      */
-    default <V> Result<V, Throwable> andThenRunCatching(@NotNull Function<T, V> fallibleAction, @NotNull Function<E, Throwable> errorHandler) {
+    default <V> Result<V, ? extends Throwable> andThenRunCatching(@NotNull Function<T, V> fallibleAction, @NotNull Function<E, Throwable> errorHandler) {
         return switch (this) {
             case Ok(T value) -> {
                 try {
@@ -201,7 +206,7 @@ public sealed interface Result<T, E> permits Ok, Err {
      * @return If this is Ok, returns Ok if fallibleAction succeeds, and Err if fallibleAction fails.
      *         If this is Err, will return the error, transforming it into ResultRethrowException if required.
      */
-    default <V> Result<V, Throwable> andThenRunCatching(@NotNull Function<T, V> fallibleAction) {
+    default <V> Result<V, ? extends Throwable> andThenRunCatching(@NotNull Function<T, V> fallibleAction) {
         return andThenRunCatching(
                 fallibleAction,
                 (E err) -> {
@@ -214,13 +219,15 @@ public sealed interface Result<T, E> permits Ok, Err {
     }
 
     /**
-     * Allows for recovery from an error.
+     * Allows for fallible recovery from an error. If action returns Ok, this method will return an Ok of type {@link T}.
+     * Else, it will return an Err of type {@link F}.
+     * If you want to instead convert between error types alone, consider using {@link #mapError(Function)}.
      * @param action The action to perform if this is an Err.
-     * @return the result returned by action.
+     * @return an Ok of type T if the action is successful, or an Err of type F if the action fails.
      * @param <F> The new error type.
      */
     @SuppressWarnings("unchecked")
-    default <F> Result<? extends T, ? extends F> orElse(@NotNull Function<E, Result<T, F>> action) {
+    default <F> Result<T, F> orElse(@NotNull Function<E, Result<T, F>> action) {
         return switch (this) {
             case Err(E err) -> action.apply(err);
             case Ok<T, E> ok-> (Ok<T, F>) ok;
@@ -235,7 +242,7 @@ public sealed interface Result<T, E> permits Ok, Err {
      *         If this is Ok, returns this.
      */
     @SuppressWarnings("unchecked")
-    default Result<? extends T, ? extends Throwable> orElseRunCatching(@NotNull Function<E, T> fallibleAction) {
+    default Result<T, ? extends Throwable> orElseRunCatching(@NotNull Function<E, T> fallibleAction) {
         return switch (this) {
             case Err(E value) -> {
                 try {
@@ -244,28 +251,45 @@ public sealed interface Result<T, E> permits Ok, Err {
                     yield new Err<>(t);
                 }
             }
-            case Ok<T, E> ok -> (Ok<? extends T, ? extends Throwable>)ok;
+            case Ok<T, E> ok -> (Ok<T, Throwable>)ok;
         };
     }
 
-    default Result<? extends E, ? extends T> swap() {
+    default Result<E, T> swap() {
         return switch (this) {
             case Ok(T value) -> new Err<>(value);
             case Err(E err) -> new Ok<>(err);
         };
     }
 
-    default Option<? extends T> ok() {
+    default Option<T> ok() {
         return switch (this) {
             case Ok(T value) -> Option.some(value);
-            case Err<T, E> e -> (None<? extends T>) Option.none;
+            case Err<T, E> e -> (None<T>) Option.none;
         };
     }
 
-    default Option<? extends E> err() {
+    default Option<E> err() {
         return switch (this) {
             case Ok<T, E> ok -> (None<E>)Option.none;
             case Err(E err) -> Option.some(err);
         };
+    }
+
+    default T bind() {
+        return switch (this) {
+            case Ok(T value) -> value;
+            case Err(E error) -> throw new ResultBindingException("Bad result binding.", null, error);
+        };
+    }
+
+    static <T, E> Result<T, E> binding(Supplier<T> action) {
+        try {
+            var result = action.get();
+            return okOfNullable(result);
+        } catch (ResultBindingException r) {
+            // We can only trust the user code to do the right thing here.
+            return errOfNullable((E)r.originalErr);
+        }
     }
 }

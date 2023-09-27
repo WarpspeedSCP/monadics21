@@ -1,4 +1,4 @@
-package dev.wscp.monadics.result;
+package dev.wscp.monadics.util;
 
 import java.util.NoSuchElementException;
 
