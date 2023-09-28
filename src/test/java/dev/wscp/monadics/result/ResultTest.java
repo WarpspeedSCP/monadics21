@@ -6,6 +6,7 @@ import dev.wscp.monadics.util.UnwrapException;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -190,5 +191,14 @@ class ResultTest {
         Result<String, Integer> res2 = Result.binding(() -> res1.orElse((it) -> Result.okOf("4")).bind());
         assertEquals(3, res1.unwrapError());
         assertEquals("4", res2.unwrap());
+    }
+
+    @Test
+    void toStream() {
+        Result<String, Integer> res1 = Result.okOf("3");
+        Result<String, Integer> res2 = Result.errOf(4);
+
+        assertEquals("3", res1.toStream().collect(Collectors.joining()));
+        assertEquals("", res2.toStream().collect(Collectors.joining()));
     }
 }

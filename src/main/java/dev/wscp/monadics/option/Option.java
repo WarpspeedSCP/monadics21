@@ -1,5 +1,6 @@
 package dev.wscp.monadics.option;
 
+import dev.wscp.monadics.result.Err;
 import dev.wscp.monadics.result.Result;
 import dev.wscp.monadics.util.UnwrapException;
 import org.jetbrains.annotations.NotNull;
@@ -106,17 +107,17 @@ public sealed interface Option<T> permits Some, None {
         };
     }
 
-    default Option<T> or(T other) {
+    default Option<T> or(Option<T> other) {
         return switch (this) {
             case Some<T> some -> some;
-            case None<T> n -> new Some<>(other);
+            case None<T> n -> other;
         };
     }
 
     @SuppressWarnings("unchecked")
-    default <V> Option<V> and(V other) {
+    default <V> Option<V> and(Option<V> other) {
         return switch (this) {
-            case Some<T> s -> new Some<>(other);
+            case Some<T> s -> other;
             case None<T> n -> (None<V>)n;
         };
     }
@@ -131,10 +132,10 @@ public sealed interface Option<T> permits Some, None {
         };
     }
 
-    default <E> Result<T, E> okOr(E err) {
+    default <E> Result<T, E> okOr(Err<T, E> err) {
         return switch (this) {
             case Some(T value) -> Result.okOf(value);
-            case None<T> n -> Result.errOf(err);
+            case None<T> n -> err;
         };
     }
 

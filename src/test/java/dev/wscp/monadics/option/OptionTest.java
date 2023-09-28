@@ -1,5 +1,6 @@
 package dev.wscp.monadics.option;
 
+import dev.wscp.monadics.result.Err;
 import dev.wscp.monadics.result.Result;
 import dev.wscp.monadics.util.UnwrapException;
 import org.junit.jupiter.api.Test;
@@ -88,23 +89,26 @@ public class OptionTest {
     void testOrElse() {
         Option<String> option = Option.none();
         Option<String> result = option.orElse(() -> Option.someOf("Fallback"));
-        assertInstanceOf(Some.class, result);
+        Option<String> some = Option.someOf("3");
         assertEquals("Fallback", result.unwrap());
+        assertEquals("3", some.orElse(Option::none).unwrap());
     }
 
     @Test
     void testOr() {
         Option<String> option = Option.none();
-        Option<String> result = option.or("Fallback");
+        Option<String> result = option.or(Option.someOf("Fallback"));
         assertInstanceOf(Some.class, result);
         assertEquals("Fallback", result.unwrap());
+        assertEquals("Fallback", result.or(Option.none()).unwrap());
     }
 
     @Test
     void testAnd() {
         Option<Integer> option = Option.none();
-        Option<Integer> result = option.and(42);
+        Option<Integer> result = option.and(Option.someOf(42));
         assertInstanceOf(None.class, result);
+        assertEquals(30, Option.someOf(4).and(Option.someOf(30)).unwrap());
     }
 
     @Test
@@ -130,9 +134,10 @@ public class OptionTest {
     @Test
     void testOkOr() {
         Option<Integer> option = Option.someOf(42);
-        Result<Integer, String> result = option.okOr("Error");
+        Result<Integer, String> result = option.okOr(new Err<>("Error"));
         assertTrue(result.isOk());
         assertEquals(42, result.unwrap());
+        assertEquals(4, Option.none().okOr(Result.errOf(4)).unwrapError());
     }
 
     @Test
