@@ -1,6 +1,5 @@
 package dev.wscp.monadics.result;
 
-import dev.wscp.monadics.option.None;
 import dev.wscp.monadics.option.Option;
 import dev.wscp.monadics.util.ResultBindingException;
 import dev.wscp.monadics.util.ResultRethrowException;
@@ -11,13 +10,15 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public sealed interface Result<T, E> permits Ok, Err {
 
     /**
      * Factory constructor for Ok values. If you want to use nullable values, use {@link #okOfNullable(T)}
+     *
      * @param value A non-null value to wrap within a result.
-     * @param <E> The error type. Can be anything, not just {@link Throwable}.
+     * @param <E>   The error type. Can be anything, not just {@link Throwable}.
      */
     static <T, E> Ok<@NotNull T, E> okOf(@NotNull T value) {
         return new Ok<>(Objects.requireNonNull(value));
@@ -25,6 +26,7 @@ public sealed interface Result<T, E> permits Ok, Err {
 
     /**
      * Factory constructor for Ok values with nullable contents.
+     *
      * @param value A nullable value to wrap within a result.
      * @param <E>
      */
@@ -34,6 +36,7 @@ public sealed interface Result<T, E> permits Ok, Err {
 
     /**
      * Factory constructor for Err values. If you want to use nullable values instead, use {@link #errOfNullable(E)}
+     *
      * @param value the non-null value to wrap in an Err.
      * @return An Err of type E.
      */
@@ -47,8 +50,8 @@ public sealed interface Result<T, E> permits Ok, Err {
 
     /**
      * @param action An action that may potentially throw.
+     * @param <T>    The value type for this result. The error type is always Throwable.
      * @return {@link Ok} with the result if action succeeds. If action fails, return {@link Err} with any thrown exception inside.
-     * @param <T> The value type for this result. The error type is always Throwable.
      */
     static <T> Result<T, Throwable> runCatching(Supplier<T> action) {
         try {
@@ -58,10 +61,26 @@ public sealed interface Result<T, E> permits Ok, Err {
         }
     }
 
+    default boolean isOk() {
+        return this instanceof Ok<T, E>;
+    }
+
+    default boolean isErr() {
+        return this instanceof Err<T, E>;
+    }
+
+    default Stream<T> toStream() {
+        return switch (this) {
+            case Ok(T value) -> Stream.of(value);
+            default -> Stream.empty();
+        };
+    }
+
     /**
      * Extracts the value of a result.
-     * @throws UnwrapException if this result is an Err and not an Ok.
+     *
      * @return the contained value.
+     * @throws UnwrapException if this result is an Err and not an Ok.
      */
     default T unwrap() {
         return switch (this) {
@@ -81,6 +100,7 @@ public sealed interface Result<T, E> permits Ok, Err {
     /**
      * Extracts the value of a result and returns a default value if the result is an {@link Err}.
      * If you want to set the default value to null, consider using {@link #unwrapOrNull()} instead.
+     *
      * @param defaultValue The default value to return if this result is not Ok.
      * @return The contained value, or the default if Err.
      */
@@ -93,6 +113,7 @@ public sealed interface Result<T, E> permits Ok, Err {
 
     /**
      * Extracts the value of a result and returns null if the result is an {@link Err}.
+     *
      * @return The wrapped value if {@link Ok}, else null.
      */
     default @Nullable T unwrapOrNull() {
@@ -101,6 +122,7 @@ public sealed interface Result<T, E> permits Ok, Err {
 
     /**
      * Extracts the error of a result. throws an {@link UnwrapException} if there is no error value to return.
+     *
      * @return The unwrapped error if this is Err.
      * @throws UnwrapException if this is Ok.
      */
@@ -113,6 +135,7 @@ public sealed interface Result<T, E> permits Ok, Err {
 
     /**
      * Extracts the error of a result and returns null if the result is an {@link Ok}.
+     *
      * @return The wrappe error if {@link Err}, else null.
      */
     default @Nullable E unwrapErrorOrNull() {
@@ -122,6 +145,7 @@ public sealed interface Result<T, E> permits Ok, Err {
     /**
      * Extracts the error of a result and returns a default value if the result is an {@link Ok}.
      * If you want to set the default value to null, consider using {@link #unwrapErrorOrNull()} instead.
+     *
      * @param defaultValue The default value to return if this result is not Err.
      * @return The contained value, or the default if Ok.
      */
@@ -134,9 +158,10 @@ public sealed interface Result<T, E> permits Ok, Err {
 
     /**
      * Converts an Ok of type T to an Ok of type V.
+     *
      * @param action The action to perform on T to get V.
+     * @param <V>    The new value type of the result.
      * @return An Ok of type V
-     * @param <V> The new value type of the result.
      */
     @SuppressWarnings("unchecked")
     default <V> Result<V, E> map(@NotNull Function<T, V> action) {
@@ -148,9 +173,10 @@ public sealed interface Result<T, E> permits Ok, Err {
 
     /**
      * Converts an Err of type E into an Err of type F by applying an action to it.
+     *
      * @param action The error transformation action to apply.
+     * @param <F>    the new error type.
      * @return an Err of type F.
-     * @param <F> the new error type.
      */
     @SuppressWarnings("unchecked")
     default <F> Result<T, F> mapError(@NotNull Function<E, F> action) {
@@ -162,9 +188,10 @@ public sealed interface Result<T, E> permits Ok, Err {
 
     /**
      * If this is {@link Ok}, return the result of action. Else, return the existing {@link Err}.
+     *
      * @param action The action to perform if this is {@link Ok}.
+     * @param <V>    The new value type.
      * @return Ok<V> if this is {@link Ok}. {@link Err} if this is {@link Err}.
-     * @param <V> The new value type.
      */
     @SuppressWarnings("unchecked")
     default <V> Result<V, E> andThen(@NotNull Function<T, Result<V, E>> action) {
@@ -181,9 +208,9 @@ public sealed interface Result<T, E> permits Ok, Err {
      * <p>Use {@link #andThenRunCatching(Function)} if you want to use the default behaviour.</p>
      *
      * @param fallibleAction The fallible operation you want to perform.
-     * @param errorHandler The transformation to apply when this is {@link Err} and not a throwable value.
-     * @return
+     * @param errorHandler   The transformation to apply when this is {@link Err} and not a throwable value.
      * @param <V>
+     * @return
      */
     default <V> Result<V, ? extends Throwable> andThenRunCatching(@NotNull Function<T, V> fallibleAction, @NotNull Function<E, Throwable> errorHandler) {
         return switch (this) {
@@ -204,7 +231,7 @@ public sealed interface Result<T, E> permits Ok, Err {
      *
      * @param fallibleAction An action to perform that could throw an exception.
      * @return If this is Ok, returns Ok if fallibleAction succeeds, and Err if fallibleAction fails.
-     *         If this is Err, will return the error, transforming it into ResultRethrowException if required.
+     * If this is Err, will return the error, transforming it into ResultRethrowException if required.
      */
     default <V> Result<V, ? extends Throwable> andThenRunCatching(@NotNull Function<T, V> fallibleAction) {
         return andThenRunCatching(
@@ -222,15 +249,16 @@ public sealed interface Result<T, E> permits Ok, Err {
      * Allows for fallible recovery from an error. If action returns Ok, this method will return an Ok of type {@link T}.
      * Else, it will return an Err of type {@link F}.
      * If you want to instead convert between error types alone, consider using {@link #mapError(Function)}.
+     *
      * @param action The action to perform if this is an Err.
+     * @param <F>    The new error type.
      * @return an Ok of type T if the action is successful, or an Err of type F if the action fails.
-     * @param <F> The new error type.
      */
     @SuppressWarnings("unchecked")
     default <F> Result<T, F> orElse(@NotNull Function<E, Result<T, F>> action) {
         return switch (this) {
             case Err(E err) -> action.apply(err);
-            case Ok<T, E> ok-> (Ok<T, F>) ok;
+            case Ok<T, E> ok -> (Ok<T, F>) ok;
         };
     }
 
@@ -239,7 +267,7 @@ public sealed interface Result<T, E> permits Ok, Err {
      *
      * @param fallibleAction an action that may throw an exception. Takes an error value as a parameter.
      * @return If this is Err and fallibleAction succeeds, returns Ok. If fallibleAction throws an exception, returns Err.
-     *         If this is Ok, returns this.
+     * If this is Ok, returns this.
      */
     @SuppressWarnings("unchecked")
     default Result<T, ? extends Throwable> orElseRunCatching(@NotNull Function<E, T> fallibleAction) {
@@ -251,7 +279,7 @@ public sealed interface Result<T, E> permits Ok, Err {
                     yield new Err<>(t);
                 }
             }
-            case Ok<T, E> ok -> (Ok<T, Throwable>)ok;
+            case Ok<T, E> ok -> (Ok<T, Throwable>) ok;
         };
     }
 
@@ -264,15 +292,15 @@ public sealed interface Result<T, E> permits Ok, Err {
 
     default Option<T> ok() {
         return switch (this) {
-            case Ok(T value) -> Option.some(value);
-            case Err<T, E> e -> (None<T>) Option.none;
+            case Ok(T value) -> Option.someOfNullable(value);
+            case Err<T, E> e -> Option.none();
         };
     }
 
     default Option<E> err() {
         return switch (this) {
-            case Ok<T, E> ok -> (None<E>)Option.none;
-            case Err(E err) -> Option.some(err);
+            case Ok<T, E> ok -> Option.none();
+            case Err(E err) -> Option.someOfNullable(err);
         };
     }
 
@@ -289,7 +317,7 @@ public sealed interface Result<T, E> permits Ok, Err {
             return okOfNullable(result);
         } catch (ResultBindingException r) {
             // We can only trust the user code to do the right thing here.
-            return errOfNullable((E)r.originalErr);
+            return errOfNullable((E) r.originalErr);
         }
     }
 }

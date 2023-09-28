@@ -5,37 +5,54 @@ import dev.wscp.monadics.util.UnwrapException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public sealed interface Option<T> permits Some, None {
-    None<?> none = new None<>();
 
-    static <T> Option<@Nullable T> some(@Nullable T value) {
-        return new Some<>(value);
+    static <T> Option<T> none() {
+        return new None<>();
+    }
+
+    static <T> Option<@NotNull T> someOf(@NotNull T value) {
+        return new Some<> (Objects.requireNonNull(value));
+    }
+
+    static <T> Option<@NotNull T> someOfNullable(@Nullable T value) {
+        if (value == null) return none();
+        else return new Some<>(value);
     }
 
     @SuppressWarnings("unchecked")
-    static <V> Option<V> fromOptional(@NotNull Optional<V> optional) {
+    static <V> Option<@NotNull V> fromOptional(@NotNull Optional<V> optional) {
         if (optional.isPresent()) {
             return new Some<V>(optional.get());
         } else {
-            return (None<V>) none;
+            return none();
         }
     }
 
-    default Optional<T> toOptional() {
+    default boolean isSome() {
+        return this instanceof Some<T>;
+    }
+
+    default boolean isNone() {
+        return this instanceof None<T>;
+    }
+
+    default Optional<@NotNull T> toOptional() {
         return switch (this) {
             case Some(T value) -> Optional.of(value);
             case None<T> ignored -> Optional.empty();
         };
     }
 
-    default Stream<T> toStream() {
+    default Stream<@NotNull T> toStream() {
         return switch (this) {
-            case Some(T value) -> Stream.ofNullable(value);
+            case Some(T value) -> Stream.of(value);
             default -> Stream.empty();
         };
     }
@@ -59,7 +76,7 @@ public sealed interface Option<T> permits Some, None {
     }
 
     @SuppressWarnings("unchecked")
-    default <V> Option<? extends V> map(@NotNull Function<? super T, ? extends V> action) {
+    default <V> Option<V> map(@NotNull Function<T, V> action) {
         return switch (this) {
             case Some(T value) -> new Some<V>(action.apply(value));
             case None<T> n -> (None<V>) n;
@@ -67,10 +84,10 @@ public sealed interface Option<T> permits Some, None {
     }
 
     @SuppressWarnings("unchecked")
-    default <V> Option<? extends V> mapDefault(@NotNull Function<? super T, ? extends V> action, V defaultValue) {
+    default <V> Option<V> mapDefault(@NotNull Function<T, V> action, V defaultValue) {
         return switch (this) {
             case Some(T value) -> new Some<V>(action.apply(value));
-            case None<T> n -> (None<V>) n;
+            case None<T> n -> new Some<>(defaultValue);
         };
     }
 
@@ -110,7 +127,7 @@ public sealed interface Option<T> permits Some, None {
         return switch (new Pair<>(this, other)) {
             case Pair(Some<T> s, None<T> ignored) -> s;
             case Pair(None<T> ignored, Some<T> o) -> o;
-            default -> (None<T>) none;
+            default -> none();
         };
     }
 
