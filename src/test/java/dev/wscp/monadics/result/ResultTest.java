@@ -187,8 +187,8 @@ class ResultTest {
     @Test
     void binding() {
         Result<String, Integer> res = Result.errOf(3);
-        Result<String, Integer> res1 = Result.binding(res::bind);
-        Result<String, Integer> res2 = Result.binding(() -> res1.orElse((it) -> Result.okOf("4")).bind());
+        Result<String, Integer> res1 = Result.binding(res::bind, Integer.class);
+        Result<String, Integer> res2 = Result.binding(() -> res1.orElse((it) -> Result.okOf("4")).bind(), Integer.class);
         assertEquals(3, res1.unwrapError());
         assertEquals("4", res2.unwrap());
     }

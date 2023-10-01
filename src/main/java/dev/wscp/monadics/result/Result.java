@@ -304,6 +304,13 @@ public sealed interface Result<T, E> permits Ok, Err {
         };
     }
 
+    /**
+     * A simple way to implement railway oriented programming in Java.
+     * This method should only be called within the context of the action
+     * of the {@link #binding(Supplier, Class)} method.
+     *
+     * @return The success value of the relevant result if
+     */
     default T bind() {
         return switch (this) {
             case Ok(T value) -> value;
@@ -311,13 +318,16 @@ public sealed interface Result<T, E> permits Ok, Err {
         };
     }
 
-    static <T, E> Result<T, E> binding(Supplier<T> action) {
+    static <T, E> Result<T, E> binding(Supplier<T> action, Class<E> errType) {
         try {
             var result = action.get();
             return okOfNullable(result);
         } catch (ResultBindingException r) {
-            // We can only trust the user code to do the right thing here.
-            return errOfNullable((E) r.originalErr);
+            return switch (r.originalErr) {
+                case Object err when errType.isInstance(err) -> errOf((E) err);
+                case null -> errOfNullable(null); // I don't know if this is the right way to do this.
+                default -> throw new ClassCastException("Wrong error type " + r.originalErr.getClass().getName() + "; expected " + errType.getName());
+            };
         }
     }
 }
