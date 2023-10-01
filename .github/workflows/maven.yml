@@ -28,4 +28,10 @@ jobs:
         distribution: 'oracle'
         cache: maven
     - name: Build with Maven
-      run: mvn -B clean verify --file pom.xml
+      run: mvn -B clean verify package --file pom.xml
+
+    - name: maven-settings-xml-action
+      uses: whelk-io/maven-settings-xml-action@v20
+      with:
+        repositories: '[{ "id": "github", "url": "https://maven.pkg.github.com/WarpspeedSCP/monadics21" }]'
+        servers: '[{ "id": "github", "username": "WarpspeedSCP", "password": "${{ secrets.PACKAGES_SECRET }}" }]'
