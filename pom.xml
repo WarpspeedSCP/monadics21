@@ -86,4 +86,13 @@
         </dependency>
     </dependencies>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub WarpspeedSCP Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/WarpspeedSCP/monadics21</url>
+        </repository>
+    </distributionManagement>
+
+
 </project>
