@@ -154,11 +154,11 @@ class ResultTest {
     @Test
     void orElseRunCatching() {
         var res1 = Result.okOf(3).andThenRunCatching((it) -> 34 / 0);
-        var res2 = res1.orElseRunCatching((it) -> it.getMessage().length());
+        var res2 = res1.orElseRunCatching(ArithmeticException.class, (it) -> it.getMessage().length());
 
         assertEquals(9, res2.unwrap());
-        assertEquals(2, Result.okOf(2).orElseRunCatching((it) -> it.toString().length()).unwrap());
-        assertEquals(2, Result.errOf(2).orElseRunCatching((it) -> it.toString().length() / 0).unwrapOrDefault(2));
+        assertEquals(2, Result.okOf(2).orElseRunCatching(Throwable.class, (it) -> it.toString().length()).unwrap());
+        assertEquals(2, Result.errOf(2).orElseRunCatching(Throwable.class, (it) -> it.toString().length() / 0).unwrapOrDefault(2));
     }
 
     @Test
@@ -187,8 +187,8 @@ class ResultTest {
     @Test
     void binding() {
         Result<String, Integer> res = Result.errOf(3);
-        Result<String, Integer> res1 = Result.binding(res::bind, Integer.class);
-        Result<String, Integer> res2 = Result.binding(() -> res1.orElse((it) -> Result.okOf("4")).bind(), Integer.class);
+        Result<String, Integer> res1 = Result.binding(Integer.class, res::bind);
+        Result<String, Integer> res2 = Result.binding(Integer.class, () -> res1.orElse((it) -> Result.okOf("4")).bind());
         assertEquals(3, res1.unwrapError());
         assertEquals("4", res2.unwrap());
     }
@@ -200,5 +200,16 @@ class ResultTest {
 
         assertEquals("3", res1.toStream().collect(Collectors.joining()));
         assertEquals("", res2.toStream().collect(Collectors.joining()));
+    }
+
+    @Test
+    void badBinding() {
+        Result<String, Double> res = Result.errOf(3.3);
+
+        assertThrows(ClassCastException.class, () -> {
+            String i = Result.binding(Integer.class, () -> {
+                return res.bind();
+            }).orElse((it) -> new Ok<>(it.toString())).unwrap();
+        });
     }
 }

@@ -55,9 +55,9 @@ public sealed interface Result<T, E> permits Ok, Err {
      */
     static <T> Result<T, Throwable> runCatching(Supplier<T> action) {
         try {
-            return new Ok<>(action.get());
+            return okOf(action.get());
         } catch (Throwable error) {
-            return new Err<>(error);
+            return errOf(error);
         }
     }
 
@@ -166,7 +166,7 @@ public sealed interface Result<T, E> permits Ok, Err {
     @SuppressWarnings("unchecked")
     default <V> Result<V, E> map(@NotNull Function<T, V> action) {
         return switch (this) {
-            case Ok(T value) -> new Ok<>(action.apply(value));
+            case Ok(T value) -> okOf(action.apply(value));
             case Err<T, E> err -> (Err<V, E>) err;
         };
     }
@@ -181,7 +181,7 @@ public sealed interface Result<T, E> permits Ok, Err {
     @SuppressWarnings("unchecked")
     default <F> Result<T, F> mapError(@NotNull Function<E, F> action) {
         return switch (this) {
-            case Err(E err) -> new Err<>(action.apply(err));
+            case Err(E err) -> errOf(action.apply(err));
             case Ok<T, E> value -> (Ok<T, F>) value;
         };
     }
@@ -216,12 +216,12 @@ public sealed interface Result<T, E> permits Ok, Err {
         return switch (this) {
             case Ok(T value) -> {
                 try {
-                    yield new Ok<>(fallibleAction.apply(value));
+                    yield okOf(fallibleAction.apply(value));
                 } catch (Throwable t) {
-                    yield new Err<>(t);
+                    yield errOf(t);
                 }
             }
-            case Err(E err) -> new Err<>(errorHandler.apply(err));
+            case Err(E err) -> errOf(errorHandler.apply(err));
         };
     }
 
@@ -266,27 +266,28 @@ public sealed interface Result<T, E> permits Ok, Err {
      * Allows for recovery from errors by performing a fallible operation that may throw.
      *
      * @param fallibleAction an action that may throw an exception. Takes an error value as a parameter.
+     * @param <F> The new error type
      * @return If this is Err and fallibleAction succeeds, returns Ok. If fallibleAction throws an exception, returns Err.
      * If this is Ok, returns this.
      */
     @SuppressWarnings("unchecked")
-    default Result<T, ? extends Throwable> orElseRunCatching(@NotNull Function<E, T> fallibleAction) {
+    default <F extends Throwable> Result<T, F> orElseRunCatching(@NotNull Class<F> errType, @NotNull Function<E, T> fallibleAction) {
         return switch (this) {
             case Err(E value) -> {
                 try {
-                    yield new Ok<>(fallibleAction.apply(value));
+                    yield okOf(fallibleAction.apply(value));
                 } catch (Throwable t) {
-                    yield new Err<>(t);
+                    yield errOf(errType.cast(t));
                 }
             }
-            case Ok<T, E> ok -> (Ok<T, Throwable>) ok;
+            case Ok<T, E> ok -> (Ok<T, F>) ok;
         };
     }
 
     default Result<E, T> swap() {
         return switch (this) {
-            case Ok(T value) -> new Err<>(value);
-            case Err(E err) -> new Ok<>(err);
+            case Ok(T value) -> errOf(value);
+            case Err(E err) -> okOf(err);
         };
     }
 
@@ -307,7 +308,7 @@ public sealed interface Result<T, E> permits Ok, Err {
     /**
      * A simple way to implement railway oriented programming in Java.
      * This method should only be called within the context of the action
-     * of the {@link #binding(Supplier, Class)} method.
+     * of the {@link #binding(Class, Supplier)} method.
      *
      * @return The success value of the relevant result if
      */
@@ -318,16 +319,22 @@ public sealed interface Result<T, E> permits Ok, Err {
         };
     }
 
-    static <T, E> Result<T, E> binding(Supplier<T> action, Class<E> errType) {
+    /**
+     * This method allows for easy implementation of "Happy-railroad" programming,
+     * where any error values will cause an early exit without resorting to a lot
+     * of consecutive if-else logic with
+     * @param action
+     * @return
+     * @throws ClassCastException If any of the .bind calls within the action are not of the expected type.
+     * @param <T>
+     * @param <E>
+     */
+    static <T, E> Result<T, E> binding(Class<E> errType, Supplier<T> action) {
         try {
             var result = action.get();
             return okOfNullable(result);
         } catch (ResultBindingException r) {
-            return switch (r.originalErr) {
-                case Object err when errType.isInstance(err) -> errOf((E) err);
-                case null -> errOfNullable(null); // I don't know if this is the right way to do this.
-                default -> throw new ClassCastException("Wrong error type " + r.originalErr.getClass().getName() + "; expected " + errType.getName());
-            };
+            return errOf(errType.cast(r.originalErr));
         }
     }
 }
